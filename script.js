@@ -1,13 +1,24 @@
+let timerInterval = null
+let tempoRestante = null
+
 const html = document.querySelector('html')
 
 const botoes = document.querySelectorAll('.app__card-button')
 
-const startPauseBt = document.querySelector('.start-pause')
+const startPauseBt = document.querySelector('#start-pause')
 
 const timer = document.querySelector('#timer')
-const musica = document.querySelector('.toggle-switch')
+const musicaSW = document.querySelector('#alternar-musica')
 const banner = document.querySelector('.app__image')
 const titulo = document.querySelector('.app__title')
+
+const musica = new Audio('/sons/luna-rise-part-one.mp3')
+
+musica.loop = true
+
+musicaSW.addEventListener('change', () => {
+    musica.paused ? musica.play() : musica.pause()
+})
 
 const dataTime = {
     'foco': 1500,
@@ -20,22 +31,36 @@ const tipoTítulos = {
     Otimize sua produtividade,<br>
     <strong class="app__title-strong">mergulhe no que importa.</strong>
     `,
-    'curto':`
+    'curto': `
     Que tal dar uma respirada?<br>
     <strong class="app__title-strong">Faça uma pausa curta!.</strong>
     `,
-    'longo':`
+    'longo': `
     Hora de voltar à superfície.<br>
     <strong class="app__title-strong">Faça uma pausa longa.</strong>
     `
 }
 
 function init() {
-    activePageBt(botoes[0])
-    timer.textContent = dataTime['foco']
+    botoes[0].classList.add('active')
+    setTimer('foco')
+    musicaSW.setAttribute('false', '')
 }
 
-function mudaTitulo(tipo){
+function getMinutesSeconds(value) {
+
+    const tempo = new Date(value * 1000) 
+    const tempoFormato = tempo.toLocaleString('pt-Br', {minute:'2-digit', second:'2-digit'})
+    return tempoFormato
+}
+
+function setTimer(value) {
+    tempoRestante = dataTime[value]
+
+    timer.textContent = getMinutesSeconds(tempoRestante)
+}
+
+function mudaTitulo(tipo) {
     titulo.innerHTML = tipoTítulos[tipo]
 }
 
@@ -43,7 +68,7 @@ function activePageBt(bt) {
     botoes.forEach((element) => {
         element.classList.remove('active')
     })
-
+    clearTimer()
     bt.classList ? bt.classList.add('active') : console.log('Botão não encontrado')
 }
 
@@ -60,9 +85,55 @@ botoes.forEach(element => {
             banner.setAttribute('src', `/imagens/descanso-${typeClass}.webp`)
         }
         activePageBt(element)
-        timer.textContent = dataTime[typeClass]
+
+        setTimer(typeClass)
         mudaTitulo(typeClass)
     })
+
+})
+
+function resetTimer() {
+    const typeData = html.getAttribute('data-contexto').replace('descanso-', '')
+    timer.textContent = dataTime[typeData]
+}
+
+function clearTimer() {
+    clearTimeout(timerInterval)
+    timerInterval = null
+
+    if (timer.textContent == 0) {
+        playAudio('/sons/beep.mp3')
+        resetTimer()
+    }
+}
+
+function playAudio(file) {
+    const playFile = new Audio(file)
+    playFile.play()
+}
+
+const contagem = () => {
+
+    tempoRestante > 0 ?
+        tempoRestante -= 1 :
+        clearTimer()
+
+    timer.textContent = getMinutesSeconds(tempoRestante)
+
+}
+
+
+startPauseBt.addEventListener('click', () => {
+    if (typeof (timerInterval) === 'undefined' || timerInterval === null) {
+        playAudio('/sons/play.wav')
+
+        timerInterval = setInterval(() => {
+            contagem()
+        }, 1000)
+    } else {
+        playAudio('/sons/pause.mp3')
+        clearTimer()
+    }
 
 })
 

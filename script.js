@@ -1,5 +1,5 @@
-let timerInterval = null
-let tempoRestante = null
+let GLOBALTIMERINTERVAL = null
+let GLOBALTEMPORESTANTE = null
 
 const html = document.querySelector('html')
 
@@ -55,9 +55,9 @@ function getMinutesSeconds(value) {
 }
 
 function setTimer(value) {
-    tempoRestante = dataTime[value]
+    GLOBALTEMPORESTANTE = dataTime[value]
 
-    timer.textContent = getMinutesSeconds(tempoRestante)
+    timer.textContent = getMinutesSeconds(GLOBALTEMPORESTANTE)
 }
 
 function mudaTitulo(tipo) {
@@ -98,8 +98,8 @@ function resetTimer() {
 }
 
 function clearTimer() {
-    clearTimeout(timerInterval)
-    timerInterval = null
+    clearTimeout(GLOBALTIMERINTERVAL)
+    GLOBALTIMERINTERVAL = null
 
     if (timer.textContent == 0) {
         playAudio('/sons/beep.mp3')
@@ -114,23 +114,30 @@ function playAudio(file) {
 
 const contagem = () => {
 
-    tempoRestante > 0 ?
-        tempoRestante -= 1 :
+    GLOBALTEMPORESTANTE > 0 ?
+        GLOBALTEMPORESTANTE -= 1 :
         clearTimer()
 
-    timer.textContent = getMinutesSeconds(tempoRestante)
+    timer.textContent = getMinutesSeconds(GLOBALTEMPORESTANTE)
 
 }
 
 
 startPauseBt.addEventListener('click', () => {
-    if (typeof (timerInterval) === 'undefined' || timerInterval === null) {
+    if (typeof (GLOBALTIMERINTERVAL) === 'undefined' || GLOBALTIMERINTERVAL === null) {
         playAudio('/sons/play.wav')
-
-        timerInterval = setInterval(() => {
+        startPauseBt.innerHTML = `
+        <img class="app__logo-image" src="/imagens/pause.webp" alt="">
+        Pausar
+        `
+        GLOBALTIMERINTERVAL = setInterval(() => {
             contagem()
         }, 1000)
     } else {
+        startPauseBt.innerHTML = `
+        <img class="app__logo-image" src="/imagens/play_arrow.webp" alt="">
+        Começar
+        `
         playAudio('/sons/pause.mp3')
         clearTimer()
     }
